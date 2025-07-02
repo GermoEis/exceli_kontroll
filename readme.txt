@@ -18,11 +18,11 @@ Lisaks kontrollib programm automaatselt, kas on saadaval uuem versioon ja annab 
 Kuidas see töötab?
 Kui käivitad programmi, avaneb lihtne aknake, kus saad valida vajalikku tööriista.
 
-Programm kontrollib taustal internetist, kas on uus versioon (vaadates teksti failist versioon.txt GitHubis).
+Programm kontrollib taustal internetist, kas on uus versioon (vaadates teksti failist versioon.txt GitLabis).
 
 Kui uuendus on olemas, ilmub punane märge ja "Uuenda" nupp, mille vajutades programm:
 
-Laeb GitHubist alla uue versiooni ZIP failina.
+Laeb GitLabist alla uue versiooni ZIP failina.
 
 Pakkib selle lahti ajutises kaustas.
 
