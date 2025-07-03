@@ -8,8 +8,8 @@ import io
 import shutil
 import tkinter.messagebox as msgbox
 
-VERSIOONI_URL = "https://gitlab.diga.ee/germo/exceli-kontroll/-/raw/main/versioon.txt"
-ZIP_URL = "https://gitlab.diga.ee/germo/exceli-kontroll/-/archive/main/exceli-kontroll-main.zip"
+VERSIOONI_URL = "https://raw.githubusercontent.com/GermoEis/exceli_kontroll/main/versioon.txt"
+ZIP_URL = "https://github.com/GermoEis/exceli_kontroll/archive/refs/heads/main.zip"
 
 def get_script_dir():
     if getattr(sys, 'frozen', False):
