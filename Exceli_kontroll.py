@@ -68,7 +68,9 @@ def on_õige_kuupäeva_formaat(kuupäev):
         return False
 
 def on_õige_dokumendi_number(dok_nr):
-    return bool(re.match(r"^[A-Z]*\d+[A-Z]*(-\d{4}-[A-Z]{2})?$", dok_nr))
+    pattern = r"^\d{2}-\d{6}-[A-Z]{2}( LISA)?$"
+    return bool(re.match(pattern, dok_nr.strip()))
+
 
 def töötlus():
     try:
@@ -114,13 +116,21 @@ def töötlus():
             if isikukood == "" or isikukood.upper() == "XXX":
                 ws.Cells(r, isikukoodCol).Interior.Color = red
             else:
-                if kontaktitüüp == "81":
+                if " " in isikukood:
+                    ws.Cells(r, isikukoodCol).Interior.Color = red
+                    if kontaktitüüp != "":
+                        ws.Cells(r, kontaktitüüpCol).Interior.Color = red
+                elif kontaktitüüp == "81":
                     if len(isikukood) != 11 or not on_õige_isikukood_formaat(isikukood):
                         ws.Cells(r, isikukoodCol).Interior.Color = red
-                        ws.Cells(r, kontaktitüüpCol).Interior.Color = red  
+                        ws.Cells(r, kontaktitüüpCol).Interior.Color = red
                 else:
                     if not on_õige_isikukood_formaat(isikukood):
                         ws.Cells(r, isikukoodCol).Interior.Color = red
+                        if kontaktitüüp != "":
+                            ws.Cells(r, kontaktitüüpCol).Interior.Color = red
+
+
 
             if kontaktitüüp == "":
                 ws.Cells(r, kontaktitüüpCol).Interior.Color = red
