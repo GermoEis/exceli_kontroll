@@ -103,8 +103,9 @@ def uuenda():
             for nimi in os.listdir(extracted_root):
                 lähte = os.path.join(extracted_root, nimi)
                 siht = os.path.join(get_script_dir(), nimi)
-                if os.path.isfile(lähte):
+                if os.path.isfile(lähte) and not lähte.endswith(".gitignore"):
                     shutil.copy2(lähte, siht)
+
 
             shutil.rmtree(temp_dir)
 
