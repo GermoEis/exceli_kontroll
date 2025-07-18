@@ -1,6 +1,11 @@
+
 build/
 dist/
 *.spec
 *.exe
+
 *.pyc
 __pycache__/
+
+.env
+config/*.txt

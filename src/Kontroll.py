@@ -19,7 +19,7 @@ def get_script_dir():
 
 def loe_kohalik_versioon():
     try:
-        failitee = os.path.join(get_script_dir(), "versioon.txt")
+        failitee = os.path.join(get_script_dir(), "config", "versioon.txt")
         with open(failitee, "r", encoding="utf-8") as f:
             return f.read().strip()
     except Exception:
