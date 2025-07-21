@@ -7,9 +7,35 @@ from tkinter import messagebox
 import threading
 import psycopg2
 from dotenv import load_dotenv
+from pathlib import Path
+import sys
 
-# Lae keskkonnamuutujad .env failist
-load_dotenv()
+# Funktsioon projektijuure leidmiseks nii skripti kui EXE puhul
+def get_project_root():
+    if getattr(sys, "frozen", False):
+        # Kui EXE-st, siis 2 kausta ülespoole EXE failist
+        return Path(sys.executable).parent.parent
+    else:
+        # Kui .py failina, siis 2 kausta ülespoole skriptist
+        return Path(__file__).resolve().parents[1]
+
+# Määra .env faili tee ja lae see
+project_root = get_project_root()
+dotenv_path = project_root / "config" / ".env"
+
+print(f".env faili laadimise tee: {dotenv_path}")
+
+if not dotenv_path.exists():
+    raise RuntimeError(f".env faili ei leitud: {dotenv_path}")
+
+load_dotenv(dotenv_path=dotenv_path)
+print(".env fail laetud")
+
+# Kontrolli vajalike võtmete olemasolu
+required_keys = ["DB_HOST", "DB_PORT", "DB_NAME", "DB_USER", "DB_PASSWORD"]
+missing = [key for key in required_keys if not os.getenv(key)]
+if missing:
+    raise RuntimeError(f"❌ Puuduvad .env võtmed: {', '.join(missing)}")
 
 def töötlus():
     try:
@@ -23,7 +49,6 @@ def töötlus():
 
         df_main = pd.read_excel(pohifail_path)
 
-        # ✅ PostgreSQL ühendus .env failist
         db_config = {
             "host": os.getenv("DB_HOST"),
             "port": int(os.getenv("DB_PORT", 5432)),
@@ -43,32 +68,23 @@ def töötlus():
         with psycopg2.connect(conn_str) as conn:
             df_meta = pd.read_sql_query('SELECT nimi, isikukood FROM public."Metadata"', conn)
 
-        # ✅ Metaandmete sõnastiku loomine
         meta_dict = {}
         for _, row in df_meta.iterrows():
             nimi = str(row["nimi"]).strip() if pd.notna(row["nimi"]) else ""
             isikukood = str(row["isikukood"]).strip() if pd.notna(row["isikukood"]) else ""
             if not isikukood:
                 continue
-            if isikukood in meta_dict:
-                meta_dict[isikukood].append(nimi)
-            else:
-                meta_dict[isikukood] = [nimi]
+            meta_dict.setdefault(isikukood, []).append(nimi)
 
-        # ✅ Värvifunktsioon
         def värv(row):
             isikukood = str(row.iloc[14]).strip() if pd.notna(row.iloc[14]) else ""
             nimi = str(row.iloc[13]).strip() if pd.notna(row.iloc[13]) else ""
 
             if isikukood in meta_dict:
                 meta_nimed = [n.strip() for n in meta_dict[isikukood]]
-                if nimi in meta_nimed:
-                    return "green"
-                else:
-                    return "orange"
+                return "green" if nimi in meta_nimed else "orange"
             return None
 
-        # ✅ COM Exceli kasutamine
         pythoncom.CoInitialize()
         excel = win32.gencache.EnsureDispatch("Excel.Application")
         excel.Visible = False
@@ -103,7 +119,7 @@ def töö_viga(veateade):
     loading_window.destroy()
     messagebox.showerror("Viga", f"Töötlemisel tekkis viga:\n{veateade}")
 
-# ✅ GUI osa
+# GUI loomine
 loading_window = tk.Tk()
 loading_window.title("Laeb")
 loading_window.geometry("300x100")
@@ -112,5 +128,6 @@ label = tk.Label(loading_window, text="Tegutsen, palun oota...", font=("Arial", 
 label.pack(pady=30)
 root = loading_window
 
+# Käivita töötlus taustal
 threading.Thread(target=töötlus, daemon=True).start()
 loading_window.mainloop()

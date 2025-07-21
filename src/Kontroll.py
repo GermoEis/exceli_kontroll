@@ -67,6 +67,7 @@ tk.Button(aken, text="Xml muutmine", command=lambda: käivita_exe("xml_muutmine.
 tk.Button(aken, text="Excelite võrdlus/kontroll suure tabeliga", command=lambda: käivita_exe("excelite_võrdlus.exe"), width=50).pack(pady=5)
 tk.Button(aken, text="Kuupäevade kontroll vastavalt nädalale", command=lambda: käivita_exe("kuupäeva_kontroll.exe"), width=50).pack(pady=5)
 tk.Button(aken, text="Exceli kontroll", command=lambda: käivita_exe("Exceli_kontroll.exe"), width=50).pack(pady=5)
+tk.Button(aken, text="Uuenda tabelit", command=lambda: käivita_exe("postgre_uuendus.exe"), width=50).pack(pady=5)
 
 # Versiooni silt alla nurka
 versioon_sisu = loe_kohalik_versioon()

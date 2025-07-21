@@ -6,6 +6,7 @@ python -m PyInstaller excelite_vordlus.spec
 python -m PyInstaller Kontroll.spec
 python -m PyInstaller kuupaeva_kontroll.spec
 python -m PyInstaller xml_muutmine.spec
+python -m PyInstaller postgre_uuendus.spec
 
 echo Valmis! Exe failid on kaustas dist\
 pause
