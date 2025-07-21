@@ -7,6 +7,7 @@ from tkinter import messagebox
 import threading
 from datetime import datetime
 
+# --- Validaatorfunktsioonid --- #
 def levenshtein(s1, s2):
     len1, len2 = len(s1), len(s2)
     d = [[0] * (len2 + 1) for _ in range(len1 + 1)]
@@ -16,10 +17,8 @@ def levenshtein(s1, s2):
         d[0][j] = j
     for i in range(1, len1 + 1):
         for j in range(1, len2 + 1):
-            cost = 0 if s1[i-1] == s2[j-1] else 1
-            d[i][j] = min(d[i-1][j] + 1,
-                          d[i][j-1] + 1,
-                          d[i-1][j-1] + cost)
+            cost = 0 if s1[i - 1] == s2[j - 1] else 1
+            d[i][j] = min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + cost)
     return d[len1][len2]
 
 def on_õige_nimi_formaat(nimi):
@@ -34,7 +33,7 @@ def on_õige_nimi_formaat(nimi):
     return True
 
 def on_õige_isikukood_formaat(isikukood):
-    keelatud = ",.;:!()_^%$#@|lZCVBNMASDFGHJKLPOIUYTREWQÜÖÕÄzcvbnm'asdfghjklöäõüpoiuytrewq[]·/"
+    keelatud = ",.;:!()_^%$#@|lZCVBNMASDFGHJKLPOIUYTREWQÜÕÖÄzcvbnm'asdfghjklööäõüpoiuytrewq[]·/"
     for ch in keelatud:
         if ch in isikukood:
             return False
@@ -71,12 +70,13 @@ def on_õige_dokumendi_number(dok_nr):
     pattern = r"^\d{2}-\d{6}-[A-Z]{2}( LISA)?$"
     return bool(re.match(pattern, dok_nr.strip()))
 
-
+# --- Põhitöötlus --- #
 def töötlus():
     try:
         with open("temp_folder.txt", "r", encoding="utf-8") as f:
             folder = f.read().strip()
-        path = os.path.join(r"Z:\scan", folder, "Book1.xlsx")
+
+        path = os.path.join(r"Z:\\scan", folder, "Book1.xlsx")
         if not os.path.exists(path):
             raise FileNotFoundError(f"Faili ei leitud: {path}")
 
@@ -98,103 +98,92 @@ def töötlus():
 
         max_row = ws.UsedRange.Rows.Count
 
-        ettevõtte_sõnad = ["OÜ", "AS", "KÜ", "SIA", "OY", "HÜ", "UAB", "AB", "UÜ", "AÜ", "ASUTAMISEL", "MTÜ", "KOGUDUS", "SAATKOND", "FIE"]
-        täiendavad_sõnad = ["KONTAKT", "ANDMED", "CLIENT", "INFO", "EES", "ERE", ".IQ", ".OI", "ISIKUKOOD"]
+        ettevottesonad = ["ÕÜ", "AS", "KÜ", "SIA", "OY", "HÜ", "UAB", "AB", "ÜÜ", "ÄÜ", "ASUTAMISEL", "MTÜ", "KOGUDUS", "SAATKOND", "FIE"]
+        tahedsonad = ["KONTAKT", "ANDMED", "CLIENT", "INFO", "EES", "ERE", ".IQ", ".OI", "ISIKUKOOD"]
 
         for r in range(2, max_row + 1):
             nimi = str(ws.Cells(r, nimiCol).Value or "").strip()
-            isikukood_raw = ws.Cells(r, isikukoodCol).Value
-            isikukood = str(isikukood_raw or "").strip()
+            isikukood = str(ws.Cells(r, isikukoodCol).Value or "").strip()
             kontaktitüüp = str(ws.Cells(r, kontaktitüüpCol).Value or "").strip()
+            if kontaktitüüp.replace('.', '', 1).isdigit():
+                kontaktitüüp = str(int(float(kontaktitüüp)))                
             kuupäev = str(ws.Cells(r, kuupäevCol).Value or "").strip()
             dokumendiNr = str(ws.Cells(r, dokumendiNrCol).Value or "").strip()
             pangakonto = str(ws.Cells(r, pangakontoCol).Value or "").strip()
 
+        # print(f"{r=}, {isikukood=}, {kontaktitüüp=}, pikkus={len(isikukood)}")
+
             if nimi == "" or nimi.upper() == "XXX":
                 ws.Cells(r, nimiCol).Interior.Color = red
 
+            # Kui isikukood tühi või "XXX", värvi ainult isikukood
             if isikukood == "" or isikukood.upper() == "XXX":
                 ws.Cells(r, isikukoodCol).Interior.Color = red
+
             else:
-                if " " in isikukood:
-                    ws.Cells(r, isikukoodCol).Interior.Color = red
-                    if kontaktitüüp != "":
-                        ws.Cells(r, kontaktitüüpCol).Interior.Color = red
-                elif kontaktitüüp == "81":
+                if kontaktitüüp == "81":
+                    # Peab olema 11 märki ja õige vorming
                     if len(isikukood) != 11 or not on_õige_isikukood_formaat(isikukood):
                         ws.Cells(r, isikukoodCol).Interior.Color = red
                         ws.Cells(r, kontaktitüüpCol).Interior.Color = red
-                else:
-                    if not on_õige_isikukood_formaat(isikukood):
+
+                elif kontaktitüüp == "80":
+                    # Kontrolli ainult siis, kui pikkus on 11
+                    if len(isikukood) == 11 and not on_õige_isikukood_formaat(isikukood):
                         ws.Cells(r, isikukoodCol).Interior.Color = red
-                        if kontaktitüüp != "":
+                        ws.Cells(r, kontaktitüüpCol).Interior.Color = red
+                    # Kui alla 11, siis EI TEE MIDAGI (ei värvi)
+
+                else:
+                    # Muud kontaktitüübid: kontrolli ainult kui pikkus on 11
+                    if len(isikukood) == 11 and not on_õige_isikukood_formaat(isikukood):
+                        ws.Cells(r, isikukoodCol).Interior.Color = red
+                        if kontaktitüüp:
                             ws.Cells(r, kontaktitüüpCol).Interior.Color = red
+                    # Kui pikkus alla 11, EI TEE MIDAGI
 
 
 
-            if kontaktitüüp == "":
+
+            if not kontaktitüüp:
                 ws.Cells(r, kontaktitüüpCol).Interior.Color = red
-            else:
-                try:
-                    kontaktitüüp_num = str(int(float(kontaktitüüp)))
-                except ValueError:
-                    kontaktitüüp_num = kontaktitüüp.strip()
+            elif kontaktitüüp.strip() not in ["80", "81"]:
+                ws.Cells(r, kontaktitüüpCol).Interior.Color = red
 
-                if kontaktitüüp_num not in ["80", "81"]:
-                    ws.Cells(r, kontaktitüüpCol).Interior.Color = red
 
-            if kuupäev == "":
+            if kuupäev == "" or not on_õige_kuupäeva_formaat(kuupäev):
                 ws.Cells(r, kuupäevCol).Interior.Color = red
-            else:
-                if not on_õige_kuupäeva_formaat(kuupäev):
-                    ws.Cells(r, kuupäevCol).Interior.Color = red
 
-            if dokumendiNr == "":
-                ws.Cells(r, dokumendiNrCol).Interior.Color = red
-            else:
-                if dokumendiNr.upper() not in ["N/A", "XXX"]:
-                    if not on_õige_dokumendi_number(dokumendiNr):
-                        ws.Cells(r, dokumendiNrCol).Interior.Color = red
+            if dokumendiNr and dokumendiNr.upper() not in ["N/A", "XXX"]:
+                if not on_õige_dokumendi_number(dokumendiNr):
+                    ws.Cells(r, dokumendiNrCol).Interior.Color = red
 
-            if pangakonto == "":
-                ws.Cells(r, pangakontoCol).Interior.Color = red
-            else:
-                if pangakonto.upper() not in ["N/A", "XXX"]:
-                    if not on_õige_pangakonto_formaat(pangakonto):
-                        ws.Cells(r, pangakontoCol).Interior.Color = red
+            if pangakonto and pangakonto.upper() not in ["N/A", "XXX"]:
+                if not on_õige_pangakonto_formaat(pangakonto):
+                    ws.Cells(r, pangakontoCol).Interior.Color = red
 
-            # Nime kontrollid
             nimi_osad = nimi.split()
             if len(nimi_osad) < 2:
                 ws.Cells(r, nimiCol).Interior.Color = red
                 continue
 
-            if len(nimi_osad) == 2:
-                if nimi_osad[0].strip().upper() == nimi_osad[1].strip().upper():
-                    ws.Cells(r, nimiCol).Interior.Color = orange
+            if len(nimi_osad) == 2 and nimi_osad[0].strip().upper() == nimi_osad[1].strip().upper():
+                ws.Cells(r, nimiCol).Interior.Color = orange
 
             if not on_õige_nimi_formaat(nimi):
                 ws.Cells(r, nimiCol).Interior.Color = red
 
             nimi_upper = nimi.upper()
-            nimi_juriidiline = any(re.search(r'\b' + re.escape(sõna) + r'\b', nimi_upper) for sõna in ettevõtte_sõnad)
+            if any(re.search(r'\b' + re.escape(s) + r'\b', nimi_upper) for s in ettevottesonad):
+                continue  # Äriline nimi
 
-            if len(nimi_osad) == 2:
-                lev_kaugus = levenshtein(nimi_osad[0].upper(), nimi_osad[1].upper())
-                if lev_kaugus == 1:
-                    ws.Cells(r, nimiCol).Interior.Color = red
+            if len(nimi_osad) == 2 and levenshtein(nimi_osad[0].upper(), nimi_osad[1].upper()) == 1:
+                ws.Cells(r, nimiCol).Interior.Color = red
 
-            nimiPuhastatud = f" {nimi_upper} "
-            for s in täiendavad_sõnad:
-                if f" {s} " in nimiPuhastatud:
+            for s in tahedsonad:
+                if f" {s} " in f" {nimi_upper} ":
                     ws.Cells(r, nimiCol).Interior.Color = red
                     break
-
-            if kontaktitüüp == "81":
-                for s in ettevõtte_sõnad:
-                    if f" {s} " in nimiPuhastatud:
-                        ws.Cells(r, nimiCol).Interior.Color = red
-                        break
 
         wb.Save()
         wb.Close(False)
@@ -205,6 +194,7 @@ def töötlus():
     except Exception as e:
         window.after(0, lambda: töö_viga(str(e)))
 
+# --- GUI --- #
 def kontroll_lõpetatud():
     label_info.pack_forget()
     messagebox.showinfo("Valmis", "Kontroll lõpetatud.")
@@ -216,7 +206,6 @@ def töö_viga(veateade):
 def käivita_töötlus():
     threading.Thread(target=töötlus).start()
 
-# GUI
 window = tk.Tk()
 window.title("Andmete kontroll")
 label_info = tk.Label(window, text="Teen kontrolli, palun oota...")

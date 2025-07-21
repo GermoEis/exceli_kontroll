@@ -19,11 +19,13 @@ def get_script_dir():
 
 def loe_kohalik_versioon():
     try:
-        failitee = os.path.join(get_script_dir(), "config", "versioon.txt")
+        script_dir = get_script_dir()
+        failitee = os.path.join(script_dir, "versioon.txt")
         with open(failitee, "r", encoding="utf-8") as f:
             return f.read().strip()
-    except Exception:
+    except Exception as e:
         return "versioon puudub"
+
 
 def versioon_numbriks(v):
     v = v.lstrip("vV")
@@ -100,11 +102,21 @@ def uuenda():
 
             extracted_root = os.path.join(temp_dir, os.listdir(temp_dir)[0])
 
-            for nimi in os.listdir(extracted_root):
-                lähte = os.path.join(extracted_root, nimi)
-                siht = os.path.join(get_script_dir(), nimi)
-                if os.path.isfile(lähte) and not lähte.endswith(".gitignore"):
-                    shutil.copy2(lähte, siht)
+            for item in os.listdir(extracted_root):
+                # Välista arendusfailid ja kaustad, mida ei taha dist kausta kopeerida
+                if item in [".git", ".gitignore", "readme", "build_all.bat", ".env", "src"]:
+                    continue
+
+                src_path = os.path.join(extracted_root, item)
+                dst_path = os.path.join(get_script_dir(), item)
+
+                if os.path.isdir(src_path):
+                    shutil.copytree(src_path, dst_path, dirs_exist_ok=True)
+                elif os.path.isfile(src_path):
+                    shutil.copy2(src_path, dst_path)
+
+
+
 
 
             shutil.rmtree(temp_dir)
