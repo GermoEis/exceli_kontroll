@@ -67,8 +67,13 @@ def on_õige_kuupäeva_formaat(kuupäev):
         return False
 
 def on_õige_dokumendi_number(dok_nr):
-    pattern = r"^\d{2}-\d{6}-[A-Z]{2}( LISA)?$"
-    return bool(re.match(pattern, dok_nr.strip()))
+    dok_nr = dok_nr.strip()
+    if re.fullmatch(r"\d{3,}", dok_nr):
+        return True  # lubatud: ainult numbrid, vähemalt 3 pikad
+    if re.fullmatch(r"\d{2}-\d{6}-[A-Z]{2}( LISA)?", dok_nr):
+        return True  # lubatud: vana eriformaat
+    return False  # kõik muu on vigane
+
 
 # --- Põhitöötlus --- #
 def töötlus():
@@ -113,8 +118,20 @@ def töötlus():
 
         # print(f"{r=}, {isikukood=}, {kontaktitüüp=}, pikkus={len(isikukood)}")
 
-            if nimi == "" or nimi.upper() == "XXX":
+            # Kontrolli, kas veerud on tühjad – igal juhul värvitakse punaseks
+            if not nimi:
                 ws.Cells(r, nimiCol).Interior.Color = red
+            if not isikukood:
+                ws.Cells(r, isikukoodCol).Interior.Color = red
+            if not kontaktitüüp:
+                ws.Cells(r, kontaktitüüpCol).Interior.Color = red
+            if not kuupäev:
+                ws.Cells(r, kuupäevCol).Interior.Color = red
+            if not dokumendiNr:
+                ws.Cells(r, dokumendiNrCol).Interior.Color = red
+            if not pangakonto:
+                ws.Cells(r, pangakontoCol).Interior.Color = red
+
 
             # Kui isikukood tühi või "XXX", värvi ainult isikukood
             if isikukood == "" or isikukood.upper() == "XXX":

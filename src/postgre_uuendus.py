@@ -15,7 +15,7 @@ def tööta():
         dotenv_path = Path(__file__).resolve().parents[0] / "config" / ".env"
         load_dotenv(dotenv_path=dotenv_path)
 
-        # Kontrolli võtmed
+        # Kontrolli vajalikud võtmed
         required_keys = ["DB_HOST", "DB_PORT", "DB_NAME", "DB_USER", "DB_PASSWORD"]
         missing = [key for key in required_keys if not os.getenv(key)]
         if missing:
@@ -48,45 +48,63 @@ def tööta():
 
         # Loe Excel (ilma päiseta)
         df_excel = pd.read_excel(excel_path, header=None)
-        if df_excel.shape[1] < 15:
-            raise ValueError(f"Excelis on ainult {df_excel.shape[1]} veergu, oodatakse vähemalt 15.")
+        if df_excel.shape[1] < 16:
+            raise ValueError(f"Excelis on ainult {df_excel.shape[1]} veergu, oodatakse vähemalt 16.")
 
-        df_excel = df_excel.rename(columns={13: "nimi", 14: "isikukood"})
+        # Nimeta veerud ümber (N = 13, O = 14, P = 15)
+        df_excel = df_excel.rename(columns={
+            13: "nimi",
+            14: "isikukood",
+            15: "tyyp"
+        })
         df_excel["isikukood"] = df_excel["isikukood"].astype(str).str.strip()
         df_excel["nimi"] = df_excel["nimi"].astype(str).str.strip()
+        df_excel["tyyp"] = df_excel["tyyp"].astype(str).str.strip()
 
         # Andmebaasi ühendus ja uuendamine
         with psycopg2.connect(conn_str) as conn:
             conn.autocommit = True
             with conn.cursor() as cur:
-                cur.execute('SELECT isikukood, nimi FROM public."Metadata"')
+                # Lae olemasolevad kirjed
+                cur.execute('SELECT isikukood, nimi, tyyp FROM public."Metadata"')
                 db_rows = cur.fetchall()
-                db_dict = {str(row[0]).strip(): str(row[1]).strip() for row in db_rows}
-
+                db_dict = {
+                    (str(row[0]).strip(), str(row[1]).strip()): str(row[2]).strip() if row[2] else ""
+                    for row in db_rows
+                }
                 lisatud = 0
                 uuendatud = 0
-
+                df_excel = df_excel.drop_duplicates(subset=["isikukood", "nimi"], keep="first")
                 for _, row in df_excel.iterrows():
                     isikukood = row["isikukood"]
                     nimi = row["nimi"]
+                    tyyp = row["tyyp"]
 
                     if not isikukood:
                         continue
 
-                    if isikukood not in db_dict:
+                    if (isikukood, nimi) not in db_dict:
                         cur.execute(
-                            'INSERT INTO public."Metadata" (isikukood, nimi) VALUES (%s, %s)',
-                            (isikukood, nimi)
+                            '''
+                            INSERT INTO public."Metadata" 
+                            (isikukood, nimi, tyyp, created_at) 
+                            VALUES (%s, %s, %s, CURRENT_TIMESTAMP)
+                            ''',
+                            (isikukood, nimi, tyyp)
                         )
                         lisatud += 1
-                    elif db_dict[isikukood] != nimi:
+                    elif db_dict[(isikukood, nimi)] != tyyp:
                         cur.execute(
-                            'UPDATE public."Metadata" SET nimi = %s WHERE isikukood = %s',
-                            (nimi, isikukood)
+                            '''
+                            UPDATE public."Metadata" 
+                            SET nimi = %s, tyyp = %s, updated_at = CURRENT_TIMESTAMP 
+                            WHERE isikukood = %s
+                            ''',
+                            (nimi, tyyp, isikukood)
                         )
                         uuendatud += 1
 
-        # Edu teade
+        # Edukas lõpp
         root.after(0, lambda: töö_valmis(lisatud, uuendatud))
 
     except Exception as e:
@@ -106,7 +124,7 @@ def töö_viga(veateade):
 
 # ---------- GUI käivitamine ----------
 root = tk.Tk()
-root.withdraw()  # peida peamine aken
+root.withdraw()  # Peida peamine aken
 
 laadimisaken = tk.Toplevel()
 laadimisaken.title("Töötleb...")
