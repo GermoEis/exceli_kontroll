@@ -103,7 +103,7 @@ def töötlus():
 
         max_row = ws.UsedRange.Rows.Count
 
-        ettevottesonad = ["ÕÜ", "AS", "KÜ", "SIA", "OY", "HÜ", "UAB", "AB", "ÜÜ", "ÄÜ", "ASUTAMISEL", "MTÜ", "KOGUDUS", "SAATKOND", "FIE"]
+        ettevottesonad = ["OÜ","ÕÜ", "AS", "KÜ", "SIA", "OY", "HÜ", "UAB", "AB", "ÜÜ", "ÄÜ", "ASUTAMISEL", "MTÜ", "KOGUDUS", "SAATKOND", "FIE"]
         tahedsonad = ["KONTAKT", "ANDMED", "CLIENT", "INFO", "EES", "ERE", ".IQ", ".OI", "ISIKUKOOD"]
 
         for r in range(2, max_row + 1):
@@ -116,7 +116,7 @@ def töötlus():
             dokumendiNr = str(ws.Cells(r, dokumendiNrCol).Value or "").strip()
             pangakonto = str(ws.Cells(r, pangakontoCol).Value or "").strip()
 
-        # print(f"{r=}, {isikukood=}, {kontaktitüüp=}, pikkus={len(isikukood)}")
+        
 
             # Kontrolli, kas veerud on tühjad – igal juhul värvitakse punaseks
             if not nimi:
@@ -146,7 +146,7 @@ def töötlus():
 
                 elif kontaktitüüp == "80":
                     # Kontrolli ainult siis, kui pikkus on 11
-                    if len(isikukood) == 11 and not on_õige_isikukood_formaat(isikukood):
+                    if len(isikukood) < 11 and not on_õige_isikukood_formaat(isikukood):
                         ws.Cells(r, isikukoodCol).Interior.Color = red
                         ws.Cells(r, kontaktitüüpCol).Interior.Color = red
                     # Kui alla 11, siis EI TEE MIDAGI (ei värvi)
@@ -158,6 +158,13 @@ def töötlus():
                         if kontaktitüüp:
                             ws.Cells(r, kontaktitüüpCol).Interior.Color = red
                     # Kui pikkus alla 11, EI TEE MIDAGI
+
+                # Lisakontroll: kui pole ettevõtte nimi ja kontaktitüüp on 80, aga isikukood on liiga lühike
+                if not any(re.search(r'\b' + re.escape(s) + r'\b', nimi.upper()) for s in ettevottesonad):
+                    if kontaktitüüp == "80" and len(isikukood) < 11:
+                        ws.Cells(r, isikukoodCol).Interior.Color = red
+                        ws.Cells(r, kontaktitüüpCol).Interior.Color = red
+
 
 
 
