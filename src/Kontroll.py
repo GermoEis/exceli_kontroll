@@ -64,6 +64,7 @@ aken.geometry("500x430")
 tk.Label(aken, text="Vali toiming:", font=("Arial", 14)).pack(pady=10)
 
 tk.Button(aken, text="Xml muutmine", command=lambda: käivita_exe("xml_muutmine.exe"), width=50).pack(pady=5)
+tk.Button(aken, text="Smart-ID asendamine - AINUULT JOOKSVAL NÄDALAL!", command=lambda: käivita_exe("smartid_exceli_kontroll.exe"), width=50).pack(pady=5)
 tk.Button(aken, text="Excelite võrdlus/kontroll suure tabeliga", command=lambda: käivita_exe("excelite_võrdlus.exe"), width=50).pack(pady=5)
 tk.Button(aken, text="Kuupäevade kontroll vastavalt nädalale", command=lambda: käivita_exe("kuupäeva_kontroll.exe"), width=50).pack(pady=5)
 tk.Button(aken, text="Exceli kontroll", command=lambda: käivita_exe("Exceli_kontroll.exe"), width=50).pack(pady=5)
