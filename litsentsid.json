@@ -9,13 +9,13 @@
     "parool_vahetatud": true
   },
   "Germo": {
-    "parool": "$2b$12$EylV2Jm8G.lbRzSg2/jZc.LzB/oXgPz.aQcRz.bSg3/jZc.LzB",
+    "parool": "$2b$12$3wiQ5toV1vaY4YCjN3L.o.kYCNmxVsminV3SxZmhlDl3CbK3L6him",
     "tööriistid": [
       "kõik"
     ],
     "aegumise_kuupäev": "2026-06-30",
     "staatus": "aktiivne",
-    "parool_vahetatud": true
+    "parool_vahetatud": false
   },
   "Peeter": {
     "parool": "$2b$12$TEINE_RÄSI_TULEB_SIIA_PEETRI_PAROOLIST",
