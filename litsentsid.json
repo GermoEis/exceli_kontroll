@@ -8,15 +8,15 @@
     "staatus": "aktiivne",
     "parool_vahetatud": true
   },
-  "Germo": {
-    "parool": "$2b$12$3wiQ5toV1vaY4YCjN3L.o.kYCNmxVsminV3SxZmhlDl3CbK3L6him",
-    "tööriistid": [
-      "kõik"
-    ],
-    "aegumise_kuupäev": "2026-06-30",
-    "staatus": "aktiivne",
-    "parool_vahetatud": false
-  },
+"Germo": {
+  "parool": "$2b$12$3wiQ5toV1vaY4YCjN3L.o.kYCNmxVsminV3SxZmhlDl3CbK3L6him",
+  "tööriistid": [
+    "kõik"
+  ],
+  "aegumise_kuupäev": "2026-06-30",
+  "staatus": "aktiivne",
+  "parool_vahetatud": true  
+},
   "Peeter": {
     "parool": "$2b$12$TEINE_RÄSI_TULEB_SIIA_PEETRI_PAROOLIST",
     "tööriistid": ["Exceli kontroll"],
