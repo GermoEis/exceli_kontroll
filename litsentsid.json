@@ -1,24 +1,27 @@
 {
   "Helina": {
-    "parool": "HelinaParool123",
+    "parool": "$2b$12$RÄSI_TULEB_SIIA_HELINA_PAROOLIST",
     "tööriistid": [
       "kõik"
     ],
     "aegumise_kuupäev": "2025-12-31",
-    "staatus": "aktiivne"
+    "staatus": "aktiivne",
+    "parool_vahetatud": true
   },
   "Germo": {
-    "parool": "test",
+    "parool": "$2b$12$EylV2Jm8G.lbRzSg2/jZc.LzB/oXgPz.aQcRz.bSg3/jZc.LzB",
     "tööriistid": [
       "kõik"
     ],
     "aegumise_kuupäev": "2026-06-30",
-    "staatus": "aktiivne"
+    "staatus": "aktiivne",
+    "parool_vahetatud": true
   },
   "Peeter": {
-    "parool": "PeetriSalasõna",
+    "parool": "$2b$12$TEINE_RÄSI_TULEB_SIIA_PEETRI_PAROOLIST",
     "tööriistid": ["Exceli kontroll"],
     "aegumise_kuupäev": "2026-01-01",
-    "staatus": "mitteaktiivne"
+    "staatus": "mitteaktiivne",
+    "parool_vahetatud": true
   }
 }
